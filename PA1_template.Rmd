@@ -7,19 +7,53 @@ output:
 
 
 ## Loading and preprocessing the data
-
+```{r}
+d0 <- read.csv("activity.csv", header=T)
+library(lubridate)
+d0$date <- ymd(d0$date)
+str(d0)
+head(d0)
+```
 
 
 ## What is mean total number of steps taken per day?
-
-
+```{r}
+sumPerDay <- tapply(d0$steps, d0$date, sum)
+#data.frame(sumPerDay)
+hist(sumPerDay, main = "Total number of steps by day", xlab = "Number of steps by day")
+```
 
 ## What is the average daily activity pattern?
-
+```{r}
+summary(sumPerDay)
+```
 
 
 ## Imputing missing values
+Total number of missing values in the dataset:
+```{r}
+sum(is.na(d0))
+```
+Fill missing values
+```{r}
+d1 <- d0
+filler <- mean(d0$steps, na.rm = T)
+d1$steps[is.na(d1$steps)] <- filler
+head(d1)
+```
 
-
-
-## Are there differences in activity patterns between weekdays and weekends?
+## Are there differences in activity patterns between weekdays and weekends
+```{r}
+weekDays <- c("Monday", "Tuesday", "Wendsday", "Thursday", "Friday")
+d1$weekDay <- factor((weekdays(d1$date) %in% weekDays), levels=c(FALSE, TRUE), labels=c("weekend", "weekday"))
+head(d1)
+wdSubset <- subset(d1, weekDay == "weekday")
+weSubset <- subset(d1, weekDay == "weekend")
+weekdayMean <- tapply(wdSubset$steps, wdSubset$date, mean)
+weekendMean <- tapply(weSubset$steps, weSubset$date, mean)
+head(weekdayMean)
+head(weekendMean)
+par(mfrow = c(2,1))
+plot(weekdayMean, type = "b")
+plot(weekendMean, type = "b")
+```
