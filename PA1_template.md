@@ -138,7 +138,7 @@ summary(sumPerDayd1)
 ## Are there differences in activity patterns between weekdays and weekends
 
 ```r
-weekDays <- c("Monday", "Tuesday", "Wendsday", "Thursday", "Friday")
+weekDays <- c("Monday", "Tuesday", "Wednsday", "Thursday", "Friday")
 d1$weekDay <- factor((weekdays(d1$date) %in% weekDays), levels=c(FALSE, TRUE), labels=c("weekend", "weekday"))
 head(d1)
 ```
@@ -177,8 +177,8 @@ head(weekendMean)
 
 ```r
 par(mfrow = c(2,1))
-plot(weekdayMean, type = "b")
-plot(weekendMean, type = "b")
+plot(weekdayMean, type = "l")
+plot(weekendMean, type = "l")
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-9-1.png)
