@@ -3,8 +3,17 @@
 
 ## Loading and preprocessing the data
 
+Load the data
+
+
 ```r
 d0 <- read.csv("activity.csv", header=T)
+```
+
+Process the data (dates as POSIXct, POSIXt)
+
+
+```r
 library(lubridate)
 d0$date <- ymd(d0$date)
 str(d0)
@@ -31,28 +40,51 @@ head(d0)
 ## 6    NA 2012-10-01       25
 ```
 
-
 ## What is mean total number of steps taken per day?
 
+Histogram of the total number of steps per day
+
+
 ```r
-sumPerDay <- tapply(d0$steps, d0$date, sum)
-#data.frame(sumPerDay)
+sumPerDay <- tapply(d0$steps, d0$date, sum, na.rm=T)
 hist(sumPerDay, main = "Total number of steps by day", xlab = "Number of steps by day")
+abline(v=mean(sumPerDay), col="red", lwd=3)
+abline(v=median(sumPerDay), col="blue", lwd=3)
+legend(x="topright", legend=c("mean","median"), col=c("red","blue"), bty="n", lwd=3)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)
-
-## What is the average daily activity pattern?
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)
 
 ```r
 summary(sumPerDay)
 ```
 
 ```
-##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
-##      41    8841   10760   10770   13290   21190       8
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##       0    6778   10400    9354   12810   21190
 ```
 
+## What is the average daily activity pattern?
+
+```r
+averageSteps <- tapply(d0$steps, d0$interval, mean, na.rm=T)
+intervalByHour <- as.numeric(names(averageSteps))/60
+plot(intervalByHour, averageSteps, type = "l", ylab = "Average steps every 5 min", xlab = "Interval by hour")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)
+
+Hour that contains the maximum number of steps
+
+
+```r
+maxAverageSteps <- which(averageSteps==max(averageSteps))
+d0$interval[maxAverageSteps]/60
+```
+
+```
+## [1] 13.91667
+```
 
 ## Imputing missing values
 Total number of missing values in the dataset:
@@ -64,7 +96,7 @@ sum(is.na(d0))
 ```
 ## [1] 2304
 ```
-Fill missing values
+Create a new dataset that is equal to the original dataset but with the missing data filled in
 
 ```r
 d1 <- d0
@@ -81,6 +113,26 @@ head(d1)
 ## 4 37.3826 2012-10-01       15
 ## 5 37.3826 2012-10-01       20
 ## 6 37.3826 2012-10-01       25
+```
+
+
+```r
+sumPerDayd1 <- tapply(d1$steps, d1$date, sum, na.rm=T)
+hist(sumPerDayd1, main = "Total number of steps by day w/filled NA values", xlab = "Number of steps by day w/filled NA values")
+abline(v=mean(sumPerDayd1), col="red", lwd=3)
+abline(v=median(sumPerDayd1), col="blue", lwd=3, lty=2)
+legend(x="topright", legend=c("mean","median"), col=c("red","blue"), bty="n", lwd=3)
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png)
+
+```r
+summary(sumPerDayd1)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##      41    9819   10770   10770   12810   21190
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends
@@ -129,4 +181,4 @@ plot(weekdayMean, type = "b")
 plot(weekendMean, type = "b")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)
+![](PA1_template_files/figure-html/unnamed-chunk-9-1.png)

@@ -7,34 +7,55 @@ output:
 
 
 ## Loading and preprocessing the data
+
+Load the data
+
 ```{r}
 d0 <- read.csv("activity.csv", header=T)
+```
+
+Process the data (dates as POSIXct, POSIXt)
+
+```{r}
 library(lubridate)
 d0$date <- ymd(d0$date)
 str(d0)
 head(d0)
 ```
 
-
 ## What is mean total number of steps taken per day?
+
+Histogram of the total number of steps per day
+
 ```{r}
-sumPerDay <- tapply(d0$steps, d0$date, sum)
-#data.frame(sumPerDay)
+sumPerDay <- tapply(d0$steps, d0$date, sum, na.rm=T)
 hist(sumPerDay, main = "Total number of steps by day", xlab = "Number of steps by day")
+abline(v=mean(sumPerDay), col="red", lwd=3)
+abline(v=median(sumPerDay), col="blue", lwd=3)
+legend(x="topright", legend=c("mean","median"), col=c("red","blue"), bty="n", lwd=3)
+summary(sumPerDay)
 ```
 
 ## What is the average daily activity pattern?
 ```{r}
-summary(sumPerDay)
+averageSteps <- tapply(d0$steps, d0$interval, mean, na.rm=T)
+intervalByHour <- as.numeric(names(averageSteps))/60
+plot(intervalByHour, averageSteps, type = "l", ylab = "Average steps every 5 min", xlab = "Interval by hour")
 ```
 
+Hour that contains the maximum number of steps
+
+```{r}
+maxAverageSteps <- which(averageSteps==max(averageSteps))
+d0$interval[maxAverageSteps]/60
+```
 
 ## Imputing missing values
 Total number of missing values in the dataset:
 ```{r}
 sum(is.na(d0))
 ```
-Fill missing values
+Create a new dataset that is equal to the original dataset but with the missing data filled in
 ```{r}
 d1 <- d0
 filler <- mean(d0$steps, na.rm = T)
@@ -42,9 +63,19 @@ d1$steps[is.na(d1$steps)] <- filler
 head(d1)
 ```
 
+```{r}
+sumPerDayd1 <- tapply(d1$steps, d1$date, sum, na.rm=T)
+hist(sumPerDayd1, main = "Total number of steps by day w/filled NA values", xlab = "Number of steps by day w/filled NA values")
+abline(v=mean(sumPerDayd1), col="red", lwd=3)
+abline(v=median(sumPerDayd1), col="blue", lwd=3, lty=2)
+legend(x="topright", legend=c("mean","median"), col=c("red","blue"), bty="n", lwd=3)
+
+summary(sumPerDayd1)
+```
+
 ## Are there differences in activity patterns between weekdays and weekends
 ```{r}
-weekDays <- c("Monday", "Tuesday", "Wendsday", "Thursday", "Friday")
+weekDays <- c("Monday", "Tuesday", "Wednsday", "Thursday", "Friday")
 d1$weekDay <- factor((weekdays(d1$date) %in% weekDays), levels=c(FALSE, TRUE), labels=c("weekend", "weekday"))
 head(d1)
 wdSubset <- subset(d1, weekDay == "weekday")
@@ -54,6 +85,6 @@ weekendMean <- tapply(weSubset$steps, weSubset$date, mean)
 head(weekdayMean)
 head(weekendMean)
 par(mfrow = c(2,1))
-plot(weekdayMean, type = "b")
-plot(weekendMean, type = "b")
+plot(weekdayMean, type = "l")
+plot(weekendMean, type = "l")
 ```
